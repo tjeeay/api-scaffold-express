@@ -5,14 +5,24 @@
   "main": "bin/www",
   "scripts": {
     "start": "node bin/www",
-    "test": "mocha dist/test/**/*.js",
+    "test": "mocha dist/test",
+    "lint": "eslint src",
     "clean": "rm -rf dist",
-    "compile": "npm run clean && babel src --out-dir dist --source-maps inline --presets=env"
+    "build": "npm run lint && npm run clean && babel src --out-dir dist --source-maps inline --presets=env"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.15.4"
+    "body-parser": "^1.17.2",
+    "compression": "^1.7.0",
+    "connect-redis": "^3.3.0",
+    "cookie-parser": "^1.4.3",
+    "cors": "^2.8.4",
+    "ejs": "^2.5.7",
+    "express": "^4.15.4",
+    "express-session": "^1.15.5",
+    "helmet": "^3.8.1",
+    "method-override": "^2.3.9"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
