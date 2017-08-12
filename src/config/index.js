@@ -5,6 +5,7 @@ const envConfig = require(`./environments/${NODE_ENV}`);
 
 Object.assign(config, envConfig, {
   env: {
+    value: NODE_ENV,
     get isDevelopment() {
       return NODE_ENV === 'development';
     },

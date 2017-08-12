@@ -1,4 +1,7 @@
 const config = {
+  server: {
+    port: 8008,
+  },
   database: {
     mongodb: {
       server: '',
