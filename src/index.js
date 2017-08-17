@@ -1,10 +1,8 @@
-import makeDebug from 'debug';
 import app from './app';
 import config from './config';
-
-const debug = makeDebug('api-scaffold-express:index');
+import logger from './common/logger';
 
 const port = config.server.port || 8008;
 app.listen(port, () => {
-  debug(`server are listening on port: ${port}`);
+  logger.info(`server are listening on port: ${port}`);
 });
