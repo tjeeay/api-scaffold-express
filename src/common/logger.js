@@ -3,7 +3,7 @@ import { join } from 'path';
 import { inspect } from 'util';
 import moment from 'moment';
 import { isEmpty } from 'lodash';
-import { Logger, transports } from 'winston';
+import winston, { Logger, transports } from 'winston';
 import 'winston-daily-rotate-file';
 
 const logDirectory = join(__dirname, '../../logs');
@@ -24,18 +24,20 @@ const logConfig = {
     info: 'green',
     debug: 'blue',
   },
+  dateFormat: 'YYYY-MM-DD HH:mm:ss.SSS ZZ',
 };
 
-const dateFormat = 'YYYY-MM-DD HH:mm:ss.SSS ZZ';
-const defaultOptions = {
-  json: false,
-  showLevel: true,
-  timestamp(format = dateFormat) {
-    return moment().format(format);
+const winstonOptions = {
+  default: {
+    json: false,
+    showLevel: true,
+    timestamp(format = logConfig.dateFormat) {
+      return moment().format(format);
+    },
   },
 };
 
-const defaultFileOptions = Object.assign({}, defaultOptions, {
+const defaultFileOptions = Object.assign({}, winstonOptions.default, {
   datePattern: 'yyyy-MM-dd-',
   prepend: true,
   prettyPrint: true,
@@ -50,31 +52,86 @@ function getFileOptions(level) {
     dirname: logDirectory,
     filename: `${level}.log`,
     formatter(opts) {
-      return `[${opts.timestamp()}] [${opts.level.toUpperCase()}] ${opts.message} ${isEmpty(opts.meta) ? '' : inspect(opts.meta)}`;
+      let log = `[${opts.timestamp()}] [${opts.level.toUpperCase()}] ${opts.message}`;
+      const meta = opts.meta;
+      if (!isEmpty(meta)) {
+        log += '\n';
+        if (meta.message && meta.stack) {
+          log += meta.stack;
+        } else {
+          log += inspect(meta);
+        }
+      }
+      return log;
     },
   };
   return Object.assign({}, defaultFileOptions, options);
 }
 
-const logger = new Logger({
-  levels: logConfig.levels,
-  colors: logConfig.colors,
-  transports: [
-    new transports.Console(Object.assign({}, defaultOptions, {
-      name: 'console-info',
-      colorize: true,
-    })),
-  ],
-});
-logger.cli();
+const defaultOptions = {
+  multiInstance: true,
+  config: logConfig,
+  onLogging(transport, level, msg, meta) {
+    // To do:
+    // if error, send email to admin
+    console.log(transport.name, level, msg, meta);
+  },
+};
 
-logger.add(transports.DailyRotateFile, getFileOptions('debug'));
-logger.add(transports.DailyRotateFile, getFileOptions('info'));
-logger.add(transports.DailyRotateFile, getFileOptions('warn'));
-logger.add(transports.DailyRotateFile, getFileOptions('error'));
+function createLogger(options) {
+  const opts = Object.assign({}, defaultOptions, options);
+  const config = opts.config;
+  const levels = Object.keys(config.levels);
 
-// test all transports
-// Object.keys(logConfig.levels).forEach(level => logger[level]('init'));
+  const logger = {};
+
+  const consoleLoggerOptions = Object.assign({}, winstonOptions.default, {
+    name: 'console-info',
+    colorize: true,
+  });
+  if (opts.multiInstance) {
+    const loggers = winston.loggers;
+
+    loggers.add('default', {
+      console: consoleLoggerOptions,
+    });
+
+    const console = loggers.get('default');
+    console.setLevels(logConfig.levels);
+    console.cli();
+
+    levels.forEach((level) => {
+      loggers.add(level, { DailyRotateFile: getFileOptions(level) });
+
+      const current = loggers.get(level);
+      current.on('logging', opts.onLogging);
+
+      logger[level] = (...args) => {
+        console[level](...args);
+        current[level](...args);
+      };
+    });
+  } else {
+    const instance = new Logger({
+      levels: config.levels,
+      colors: config.colors,
+      transports: [
+        new transports.Console(consoleLoggerOptions),
+      ],
+    });
+
+    levels.forEach((level) => {
+      instance.add(transports.DailyRotateFile, getFileOptions(level));
+      logger[level] = instance[level];
+    });
+
+    instance.cli();
+    instance.on('logging', opts.onLogging);
+  }
+  return logger;
+}
+
+const logger = createLogger();
 
 Object.defineProperty(logger, 'accessLogStream', {
   configurable: false,
@@ -87,13 +144,11 @@ Object.defineProperty(logger, 'accessLogStream', {
   },
 });
 
-// logger.on('logging', (transport, level, msg, meta) => {
-//   // To do:
-//   // if error, send email to admin
-//   console.log(transport.name, level, msg, meta);
-// });
+// test all transports
+Object.keys(logConfig.levels).forEach(level => logger[level]('init'));
 
+const dateFormat = logConfig.dateFormat;
 export {
   dateFormat,
+  logger as default,
 };
-export default logger;

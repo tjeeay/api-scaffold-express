@@ -40,27 +40,26 @@ process.on('unhandledRejection', (reason, p) => {
 
 export default function handleServerError(err, req, res, next) {
   const status = err.status || err.statusCode || 500;
-  const message = `Unhandled Server Error: ${err.message}`;
 
-  const obj = { url: req.url, message };
+  const errObj = { url: req.url, message: err.message };
   if (config.env.isDevelopment) {
-    obj.error = err;
+    errObj.stack = err.stack;
   }
 
   const requestLog = getRequestLog(req, res);
   logger.error(requestLog);
-  logger.error(err.message, err);
+  logger.error('UnhandledServerError', err);
 
   if (status >= 500) {
     res.status(status).format({
       html() {
-        res.render('error_pages/500', obj);
+        res.render('error_pages/500', errObj);
       },
       json() {
-        res.json(obj);
+        res.json(errObj);
       },
       default() {
-        res.type('txt').send(message);
+        res.type('txt').send(errObj.message);
       },
     });
   } else {
