@@ -18,6 +18,18 @@ const config = {
     ],
   },
   cookieSecret: '598ed68b7783710f0ee6c35f',
+  smtp: {
+    host: 'smtp.163.com',
+    port: 465,  // (defaults to 587 is secure is false or 465 if true)
+    secure: true,
+    auth: {
+      user: '',
+      pass: '',
+    },
+  },
+  mailRecipients: {
+    errorLog: '',
+  },
 };
 
 export default config;

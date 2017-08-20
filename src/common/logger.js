@@ -6,6 +6,9 @@ import { isEmpty } from 'lodash';
 import winston, { Logger, transports } from 'winston';
 import 'winston-daily-rotate-file';
 
+import config from '../config';
+import mailer from './mailer';
+
 const logDirectory = join(__dirname, '../../logs');
 if (!fs.existsSync(logDirectory)) {
   fs.mkdirSync(logDirectory);
@@ -75,13 +78,16 @@ const defaultOptions = {
     // To do:
     // if error, send email to admin
     console.log(transport.name, level, msg, meta);
+    if (level === 'error') {
+      mailer.sendText(config.mailRecipients.errorLog, msg);
+    }
   },
 };
 
 function createLogger(options) {
   const opts = Object.assign({}, defaultOptions, options);
-  const config = opts.config;
-  const levels = Object.keys(config.levels);
+  const levels = opts.config.levels;
+  const colors = opts.config.colors;
 
   const logger = {};
 
@@ -97,10 +103,10 @@ function createLogger(options) {
     });
 
     const console = loggers.get('default');
-    console.setLevels(logConfig.levels);
+    console.setLevels(levels);
     console.cli();
 
-    levels.forEach((level) => {
+    Object.keys(levels).forEach((level) => {
       loggers.add(level, { DailyRotateFile: getFileOptions(level) });
 
       const current = loggers.get(level);
@@ -113,14 +119,14 @@ function createLogger(options) {
     });
   } else {
     const instance = new Logger({
-      levels: config.levels,
-      colors: config.colors,
+      levels,
+      colors,
       transports: [
         new transports.Console(consoleLoggerOptions),
       ],
     });
 
-    levels.forEach((level) => {
+    Object.keys(levels).forEach((level) => {
       instance.add(transports.DailyRotateFile, getFileOptions(level));
       logger[level] = instance[level];
     });
