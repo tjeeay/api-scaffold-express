@@ -4,7 +4,7 @@ import logger from '../common/logger';
 
 function formatLine(tokens, req, res) {
   return [
-    req.id,
+    `[${req.id}]`,
     tokens.method(req, res),
     tokens.url(req, res),
     `HTTP/${tokens['http-version'](req, res)}`,
@@ -18,7 +18,7 @@ function formatLine(tokens, req, res) {
   ].join(' ');
 }
 
-function getLog(req, res) {
+function makeLog(req, res) {
   return formatLine(morgan, req, res);
 }
 
@@ -33,6 +33,6 @@ if (config.env.isDevelopment) {
 const accessLogger = morgan(format, options);
 
 export {
-  getLog,
+  makeLog,
 };
 export default accessLogger;

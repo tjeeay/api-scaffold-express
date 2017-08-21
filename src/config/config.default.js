@@ -23,12 +23,13 @@ const config = {
     port: 465,  // (defaults to 587 is secure is false or 465 if true)
     secure: true,
     auth: {
-      user: '',
-      pass: '',
+      user: 'sender@163.com',
+      pass: 'passwrod',
     },
   },
-  mailRecipients: {
-    errorLog: '',
+  logger: {
+    mailLevels: ['error'],
+    mailRecipients: 'someone@example.com',
   },
 };
 

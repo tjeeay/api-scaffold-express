@@ -7,7 +7,6 @@
 
 import config from '../config';
 import logger from '../common/logger';
-import { getLog as getRequestLog } from './access_log';
 
 /**
  * release allocated resources (e.g. file descriptors, db connection, handles, etc)
@@ -24,7 +23,7 @@ function cleanupAndExit(code = -1) {
  * @param <Error> err the Error object
  */
 process.on('uncaughtException', (err) => {
-  logger.error('uncaughtException', err);
+  logger.error('uncaughtException: ', err);
   cleanupAndExit();
 });
 
@@ -34,24 +33,28 @@ process.on('uncaughtException', (err) => {
  * @param <Promise> p the Promise that was rejected.
  */
 process.on('unhandledRejection', (reason, p) => {
-  logger.error('unhandledRejection', reason, p);
+  logger.error('unhandledRejection: ', reason, p);
   cleanupAndExit();
 });
 
 export default function handleServerError(err, req, res, next) {
   const status = err.status || err.statusCode || 500;
+  res.status(status);
 
-  const errObj = { url: req.url, message: err.message };
+  logger.error('UnhandledServerError: ', Object.assign(err, { req, res }));
+
+  const errObj = {
+    status,
+    url: req.originalUrl || req.url,
+    message: err.message,
+    stack: err.stack
+  };
   if (config.env.isDevelopment) {
-    errObj.stack = err.stack;
+    delete errObj.stack;
   }
 
-  const requestLog = getRequestLog(req, res);
-  logger.error(requestLog);
-  logger.error('UnhandledServerError', err);
-
   if (status >= 500) {
-    res.status(status).format({
+    res.format({
       html() {
         res.render('error_pages/500', errObj);
       },

@@ -9,9 +9,8 @@ const transporter = createTransport(smtpConfig, defaults);
 
 const mailer = {};
 
-
-mailer.sendText = (to, text) => mailer.send({ to, text });
-mailer.sendHtml = (to, html) => mailer.send({ to, html });
+mailer.sendText = (to, subject, text) => mailer.send({ to, subject, text });
+mailer.sendHtml = (to, subject, html) => mailer.send({ to, subject, html });
 
 mailer.send = (data) => {
   const p = new Promise((resolve, reject) => {

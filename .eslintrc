@@ -1,7 +1,14 @@
 {
-  "extends": "airbnb-base",
+  "extends": "standard",
   "rules": {
-    "import/no-dynamic-require": 0,
-    "func-names": 0
+    "semi": ["error", "always"],
+    "comma-dangle": ["error", {
+        "arrays": "ignore",
+        "objects": "ignore",
+        "imports": "ignore",
+        "exports": "ignore",
+        "functions": "ignore"
+    }],
+    "space-before-function-paren": ["off"]
   }
 }

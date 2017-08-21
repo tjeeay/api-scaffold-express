@@ -1,11 +1,11 @@
-import config from './config.default';
+import config from './config';
 
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const envConfig = require(`./environments/${NODE_ENV}`);
 
 Object.assign(config, envConfig, {
   env: {
-    value: NODE_ENV,
+    current: NODE_ENV,
     get isDevelopment() {
       return NODE_ENV === 'development';
     },
