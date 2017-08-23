@@ -13,10 +13,10 @@ import config from './config';
 
 // custome middlewares
 import cors from './middlewares/cors';
-import logTrace from './middlewares/log_trace';
+import traceLog from './middlewares/trace_log';
 import accessLog from './middlewares/access_log';
-import errorHandler from './middlewares/error_handler';
-import notFoundHandler from './middlewares/not_found_handler';
+import handleNotFound from './middlewares/handle_not_found';
+import handleServerError from './middlewares/handle_server_error';
 
 import setupRoutes from './routes';
 
@@ -45,20 +45,20 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));  // `extended: false` for prevent sql injection
 app.use(compress());
 
-// enable log trace
-app.use(logTrace);
+// enable log trace (set `id` for each req)
+app.use(traceLog());
 
 // enable access log in development,
 // in production will use nginx access log instead
-if (config.env.isDevelopment) {
-  app.use(accessLog);
+if (config.env.isDevelopment()) {
+  app.use(accessLog());
 }
 
 // api routes
 setupRoutes(app);
 
 // config error handlers
-app.use(notFoundHandler);
-app.use(errorHandler);
+app.use(handleNotFound());
+app.use(handleServerError());
 
 export default app;

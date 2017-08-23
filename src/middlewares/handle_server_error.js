@@ -37,35 +37,42 @@ process.on('unhandledRejection', (reason, p) => {
   cleanupAndExit();
 });
 
-export default function handleServerError(err, req, res, next) {
-  const status = err.status || err.statusCode || 500;
-  res.status(status);
+/**
+ * error handler middleware
+ */
+function handleServerError() {
+  return function(err, req, res, next) {
+    const status = err.status || err.statusCode || 500;
+    res.status(status);
 
-  logger.error('UnhandledServerError: ', Object.assign(err, { req, res }));
+    logger.error('UnhandledServerError: ', Object.assign(err, { req, res }));
 
-  const errObj = {
-    status,
-    url: req.originalUrl || req.url,
-    message: err.message,
-    stack: err.stack
+    const errObj = {
+      status,
+      url: req.originalUrl || req.url,
+      message: err.message,
+      stack: err.stack
+    };
+    if (config.env.isDevelopment()) {
+      delete errObj.stack;
+    }
+
+    if (status >= 500) {
+      res.format({
+        html() {
+          res.render('error_pages/500', errObj);
+        },
+        json() {
+          res.json(errObj);
+        },
+        default() {
+          res.type('txt').send(errObj.message);
+        },
+      });
+    } else {
+      next(err);
+    }
   };
-  if (config.env.isDevelopment) {
-    delete errObj.stack;
-  }
-
-  if (status >= 500) {
-    res.format({
-      html() {
-        res.render('error_pages/500', errObj);
-      },
-      json() {
-        res.json(errObj);
-      },
-      default() {
-        res.type('txt').send(errObj.message);
-      },
-    });
-  } else {
-    next(err);
-  }
 }
+
+export default handleServerError;
