@@ -1,0 +1,14 @@
+{
+  "include": [
+    "**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "bower_components",
+    "jspm_packages"
+  ],
+  "compilerOptions": {
+    "allowJs": true,
+    "experimentalDecorators": true
+  }
+}

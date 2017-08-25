@@ -10,5 +10,10 @@
         "functions": "ignore"
     }],
     "space-before-function-paren": ["off"]
+  },
+  "parserOptions": {
+    "ecmaFeatures": {
+      "experimentalObjectRestSpread": true
+    }
   }
 }
