@@ -1,5 +1,6 @@
 {
   "extends": "standard",
+  "parser": "babel-eslint",
   "rules": {
     "semi": ["error", "always"],
     "comma-dangle": ["error", {
@@ -10,10 +11,5 @@
         "functions": "ignore"
     }],
     "space-before-function-paren": ["off"]
-  },
-  "parserOptions": {
-    "ecmaFeatures": {
-      "experimentalObjectRestSpread": true
-    }
   }
 }

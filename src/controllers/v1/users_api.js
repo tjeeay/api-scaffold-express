@@ -9,7 +9,7 @@ class UserApi extends BaseApi {
     this.logger = logger;
   }
 
-  @route('GET', 'login')
+  @route('POST', 'login')
   login(req, res, next) {
     const user = req.body;
     if (!user.username || !user.password) {
@@ -21,6 +21,11 @@ class UserApi extends BaseApi {
 
     delete user.password;
     return res.send({ code: 0, message: '登录成功', data: user });
+  }
+
+  @route('GET', 'greeting')
+  greeting(req, res, next) {
+    res.send('Hello world!');
   }
 }
 

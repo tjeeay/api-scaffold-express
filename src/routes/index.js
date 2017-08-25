@@ -1,22 +1,34 @@
 import fs from 'fs';
 import { join } from 'path';
-import { API_ROUTES } from '../common/constants';
+import { resolve } from 'url';
+import { endsWith, trimStart } from 'lodash';
+import { API_ROUTES, ROUTE_PREFIX } from '../common/constants';
 import logger from '../common/logger';
 import models from '../models';
 
 function applyRoute(app, version) {
   const dir = join(__dirname, '../controllers', version);
-  fs.readdir(dir, (err, files) => {
-    if (err) {
-      return logger.error(`failed to apply route. dir: ${dir}`);
-    }
-    files.forEach((file) => {
-      const ctrl = new (require(file))(models, logger);
+  const files = fs.readdirSync(dir);
+  files.forEach((file) => {
+    const { default: Api } = require(join(dir, file));
+    let prefix = Api[ROUTE_PREFIX] || '/';
+    const routes = Api[API_ROUTES] || [];
+    const api = new Api(models, logger);
 
-      ctrl[API_ROUTES] = ctrl[API_ROUTES] || [];
-      ctrl[API_ROUTES].forEach(({ method, path, action }) => {
-        app[method](path, action);
-      });
+    routes.forEach(({ method, path, action }) => {
+      method = method.toLowerCase();
+      if (!app[method]) {
+        throw new Error(`Unkonwn http method '${method}'`);
+      }
+
+      if (!endsWith(prefix, '/')) {
+        prefix += '/';
+      }
+      prefix = trimStart(prefix, '/');
+      path = trimStart(path, '/');
+      path = resolve(`/${version}/`, trimStart(prefix + path, '/'));
+      app[method](path, action.bind(api));
+      logger.debug(`mount api route: ${method} ${path}`);
     });
   });
 }

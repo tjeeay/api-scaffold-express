@@ -75,15 +75,13 @@ const winstonOptions = {
     const ctx = opts.meta || {};
     const req = ctx.request || ctx.req;
     const res = ctx.response || ctx.res;
-    const prefix = `[${opts.timestamp()}] [${opts.level.toUpperCase()}]`;
 
-    let log = '';
-
+    let log = `[${opts.timestamp()}] [${opts.level.toUpperCase()}]`;
     if (ctx.req && ctx.res) {
-      log += `${prefix} ${makeRequestLog(req, res)}${EOL}`;
+      log += ` ${makeRequestLog(req, res)}${EOL}`;
     }
 
-    log += `${opts.message}`;
+    log += ` ${opts.message}`;
     if (ctx.message && ctx.stack) {
       log += ctx.stack;
     } else if (Object.keys(ctx).length > 0) {

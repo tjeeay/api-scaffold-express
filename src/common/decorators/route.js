@@ -1,5 +1,4 @@
-import { resolve } from 'url';
-import { API_ROUTES, ROUTE_PREFIX } from '../common/constants';
+import { API_ROUTES, ROUTE_PREFIX } from '../constants';
 
 /**
  * route decorator
@@ -16,34 +15,17 @@ export default function (prefixOrMethod, path = '/') {
   }
 
   return function(target, name, descriptor) {
-    const proto = target.prototype;
-
-    if (!proto.hasOwnProperty(API_ROUTES)) {
-      Object.defineProperty(target, API_ROUTES, {
-        configurable: false,
-        writable: true,
-        enumerable: true,
-        value: [],
-      });
-    }
-
-    if (!proto.hasOwnProperty(ROUTE_PREFIX)) {
-      // must ends with '/'
-      if (prefix[prefix.length - 1] !== '/') {
-        prefix += '/';
-      }
-
-      proto[ROUTE_PREFIX] = prefix;
-    }
-
-    if (descriptor && descriptor.value) {
+    if (arguments.length === 1) {
+      target[ROUTE_PREFIX] = prefix;
+    } else if (arguments.length === 3) {
+      const Api = target.constructor;
+      Api[API_ROUTES] = Api[API_ROUTES] || [];
       const route = {
         method,
-        path: resolve(proto[ROUTE_PREFIX], path),
+        path,
         action: descriptor.value,
       };
-
-      proto[API_ROUTES].push(route);
+      Api[API_ROUTES].push(route);
     }
   };
 }
