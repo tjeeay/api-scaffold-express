@@ -18,7 +18,7 @@ import accessLog from './middlewares/access_log';
 import handleNotFound from './middlewares/handle_not_found';
 import handleServerError from './middlewares/handle_server_error';
 
-import setupRoutes from './routes';
+import configRoutes from './config/config.route';
 
 const app = express();
 
@@ -55,7 +55,7 @@ if (config.env.isDevelopment()) {
 }
 
 // api routes
-setupRoutes(app);
+configRoutes(app);
 
 // config error handlers
 app.use(handleNotFound());

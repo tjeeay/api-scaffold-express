@@ -33,8 +33,8 @@ function applyRoute(app, version) {
   });
 }
 
-function setup(app) {
+function config(app) {
   ['v1'].forEach(version => applyRoute(app, version));
 }
 
-export default setup;
+export default config;

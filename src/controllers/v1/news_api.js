@@ -1,7 +1,7 @@
-import route from '../../common/decorators/route';
+import { prefix, get } from '../../common/decorators/route';
 import BaseApi from '../base_api';
 
-@route('news')
+@prefix('news')
 class NewsApi extends BaseApi {
   constructor(models, logger) {
     super();
@@ -9,8 +9,11 @@ class NewsApi extends BaseApi {
     this.logger = logger;
   }
 
-  @route('GET', 'list')
+  @get('list')
   list(req, res, next) {
+    let a = null;
+    let b = a.b;
+    console.log(b);
     res.send('news list');
   }
 }

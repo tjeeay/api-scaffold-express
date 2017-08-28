@@ -1,7 +1,7 @@
-import route from '../../common/decorators/route';
+import { prefix, get, post } from '../../common/decorators/route';
 import BaseApi from '../base_api';
 
-@route('users')
+@prefix('users')
 class UserApi extends BaseApi {
   constructor(models, logger) {
     super();
@@ -9,7 +9,7 @@ class UserApi extends BaseApi {
     this.logger = logger;
   }
 
-  @route('POST', 'login')
+  @post('login')
   login(req, res, next) {
     const user = req.body;
     if (!user.username || !user.password) {
@@ -23,7 +23,7 @@ class UserApi extends BaseApi {
     return res.send({ code: 0, message: '登录成功', data: user });
   }
 
-  @route('GET', 'greeting')
+  @get('greeting')
   greeting(req, res, next) {
     res.send('Hello world!');
   }

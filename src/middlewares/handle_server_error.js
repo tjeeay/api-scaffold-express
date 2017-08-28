@@ -15,7 +15,19 @@ import logger from '../common/logger';
 function cleanupAndExit(code = -1) {
   // To do:
   // 1. cleanup the allocated resources (e.g. file descriptors, db connection, handles, etc)
-  process.exit(code);
+
+  const handleTimeout = setTimeout(() => {
+    process.exit(code);
+  }, 1000);
+
+  /* eslint-disable no-undef */
+  if (server && typeof server.close === 'function') {
+    server.close(() => {
+      clearTimeout(handleTimeout);
+      process.exit(code);
+    });
+  }
+  /* eslint-enable no-undef */
 }
 
 /**
@@ -50,11 +62,10 @@ function handleServerError() {
     const errObj = {
       status,
       url: req.originalUrl || req.url,
-      message: err.message,
-      stack: err.stack
+      error: err
     };
-    if (config.env.isDevelopment()) {
-      delete errObj.stack;
+    if (!config.env.isDevelopment()) {
+      delete errObj.error.stack;
     }
 
     if (status >= 500) {

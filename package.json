@@ -8,7 +8,7 @@
     "test": "mocha test",
     "lint": "eslint src",
     "clean": "rimraf bin",
-    "build": "npm run lint && npm run clean && babel src --out-dir bin --source-maps inline"
+    "build": "npm run lint && npm run clean && babel src --watch --out-dir bin --source-maps inline"
   },
   "author": "",
   "license": "ISC",
@@ -25,6 +25,7 @@
     "helmet": "^3.8.1",
     "lodash": "^4.17.4",
     "method-override": "^2.3.9",
+    "methods": "^1.1.2",
     "moment": "^2.18.1",
     "morgan": "^1.8.2",
     "nodemailer": "^4.0.1",

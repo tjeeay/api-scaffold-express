@@ -2,6 +2,9 @@ import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import config from './config';
 
+const PORT = process.env.PORT;
+config.server.port = config.server.port || PORT;
+
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const envConfig = require(`./environments/${NODE_ENV}`);
 
