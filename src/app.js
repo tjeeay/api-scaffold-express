@@ -13,10 +13,10 @@ import config from './config';
 
 // custome middlewares
 import cors from './middlewares/cors';
-import traceLog from './middlewares/trace_log';
-import accessLog from './middlewares/access_log';
-import handleNotFound from './middlewares/handle_not_found';
-import handleServerError from './middlewares/handle_server_error';
+import traceLog from './middlewares/trace-log';
+import accessLog from './middlewares/access-log';
+import handleNotFound from './middlewares/handle-not-found';
+import handleServerError from './middlewares/handle-server-error';
 
 import configRoutes from './config/config.route';
 

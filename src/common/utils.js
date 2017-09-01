@@ -16,6 +16,22 @@ function makeRequestLog(req, res) {
   ].join(' ');
 }
 
+/**
+ * fetch all params from req
+ * @param {Object} req the http request
+ * @param {Boolean} withinRouteParams include params on route when is true, but sometimes we need't such as sign for authentication
+ * @returns {Object} return all params of http req
+ */
+function fetchRequestParams(req, withinRouteParams = true) {
+  const { params, query, body } = req;
+  let args = Object.assign({}, query, body);
+  if (withinRouteParams) {
+    args = Object.assign({}, params, args);
+  }
+  return args;
+}
+
 export {
   makeRequestLog,
+  fetchRequestParams,
 };

@@ -1,14 +1,19 @@
 import { createHash } from 'crypto';
 
-var encryption = {
+const encryption = {
   /**
-   *  md5 函数定义
+   * md5 函数定义
    * @param str 加密字符串
    * @returns {String} 返回结果
    */
-  md5: function (str) {
-    var hash = createHash('md5');
-    return hash.update(str + '').digest('hex');
+  md5(str, format = 'hex') {
+    const md5 = createHash('md5');
+    return md5.update(str + '').digest(format);
+  },
+
+  sha256(str, key, format = 'base64') {
+    const sha256 = createHash('sha256', key);
+    return sha256.update(str).digest(format);
   },
 
   /**
@@ -18,36 +23,38 @@ var encryption = {
    * @param {String} key 加密解密key，默认不需要传
    * @returns {String} 返回结果
    */
-  process: function (str, operation, key = 'api-scaffold-express-encryption-key') {
+  process(str, operation, key = 'api-scaffold-express-encryption-key') {
     key = this.md5(key);
     const isEncrypt = operation === 'ENCRYPT';
     str = isEncrypt ? str.replace(/###/g, '+') : str;
 
-    var strbuf = isEncrypt
+    const strbuf = isEncrypt
       ? (Buffer.from(str, 'base64'))
       : (Buffer.from(this.md5(str + key).substr(0, 8) + str));
 
-    var box = new Array(256);
-    var i;
+    const box = new Array(256);
+    let i;
     for (i = 0; i < 256; i++) {
       box[i] = i;
     }
-    var rndkey = [];
+    const rndkey = [];
     // 产生密匙簿
     for (i = 0; i < 256; i++) {
       rndkey[i] = key.charCodeAt(i % key.length);
     }
     // 用固定的算法，打乱密匙簿，增加随机性，好像很复杂，实际上对并不会增加密文的强度
-    for (var j = i = 0; i < 256; i++) {
+    let j;
+    let tmp;
+    for (j = i = 0; i < 256; i++) {
       j = (j + box[i] + rndkey[i]) % 256;
-      var tmp = box[i];
+      tmp = box[i];
       box[i] = box[j];
       box[j] = tmp;
     }
 
     // 核心加解密部分
-    var s = '';
-    for (var a = j = i = 0; i < strbuf.length; i++) {
+    let s = '';
+    for (let a = j = i = 0; i < strbuf.length; i++) {
       a = (a + 1) % 256;
       j = (j + box[a]) % 256;
       tmp = box[a];
@@ -67,18 +74,18 @@ var encryption = {
       }
     } else {
       s = strbuf.toString('base64');
-      var regex = new RegExp('=', 'g');
+      const regex = new RegExp('=', 'g');
       s = s.replace(regex, '');
     }
 
     return s;
   },
 
-  encrypt: function (str, key) {
+  encrypt(str, key) {
     return this.process(str, 'ENCRYPT', key);
   },
 
-  decrypt: function (str, key) {
+  decrypt(str, key) {
     return this.process(str, 'DECRYPT', key);
   }
 };
