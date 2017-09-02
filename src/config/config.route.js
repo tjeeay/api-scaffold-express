@@ -6,6 +6,8 @@ import { API_ROUTES, ROUTE_PREFIX } from '../common/constants';
 import logger from '../common/logger';
 import models from '../models';
 
+const slash = '/';
+
 function applyRoute(app, version) {
   const dir = join(__dirname, '../controllers', version);
   const files = fs.readdirSync(dir);
@@ -21,13 +23,22 @@ function applyRoute(app, version) {
         throw new Error(`Unkonwn http method '${method}'`);
       }
 
-      if (!endsWith(prefix, '/')) {
-        prefix += '/';
+      if (!endsWith(prefix, slash)) {
+        prefix += slash;
       }
-      prefix = trimStart(prefix, '/');
-      path = trimStart(path, '/');
-      path = resolve(`/${version}/`, trimStart(prefix + path, '/'));
-      app[method](path, action.bind(api));
+      prefix = trimStart(prefix, slash);
+      path = trimStart(path, slash);
+      path = resolve(`/${version}/`, trimStart(prefix + path, slash));
+      app[method](path, (req, res, next) => {
+        const ctx = {
+          req,
+          res,
+        };
+        const cb = (...args) => {
+          next(...args);
+        };
+        action.call(api, ctx, cb);
+      });
       logger.debug(`mount api route: ${method} ${path}`);
     });
   });
