@@ -29,6 +29,13 @@ function applyRoute(app, version) {
       prefix = trimStart(prefix, slash);
       path = trimStart(path, slash);
       path = resolve(`/${version}/`, trimStart(prefix + path, slash));
+
+      // To do: exec before and after handler
+
+      // const beforeListeners = api.beforeListeners[action.name];
+      // if (beforeListeners && beforeListeners.length) {
+
+      // }
       app[method](path, (req, res, next) => {
         const ctx = {
           req,
