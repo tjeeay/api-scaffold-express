@@ -10,7 +10,7 @@ class NewsController extends Controller {
   }
 
   @get('list')
-  list(req, res, next) {
+  list({ res }, done) {
     let a = null;
     let b = a.b;
     console.log(b);

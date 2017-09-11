@@ -2,6 +2,7 @@ import assert from 'assert';
 import makeDebug from 'debug';
 import { trimStart, endsWith } from 'lodash';
 import { PREFIX, ACTIONS } from '../constants';
+import { execHooks } from './helpers';
 
 const debug = makeDebug('adaptors:express');
 
@@ -26,7 +27,7 @@ export default class ExpressAdaptor {
       const ctrl = new Controller();
 
       actions.forEach((action) => {
-        var { method, path, hooks, invoke: invokeAction } = action;
+        var { name, method, path, hooks, invoke: invokeAction } = action;
 
         method = method.toLowerCase();
         assert(method in app, `Unkonwn http method '${method}'.`);
@@ -47,23 +48,18 @@ export default class ExpressAdaptor {
             res,
           };
 
-          // To do: exec before and after hook
-          const activeHooks = hooks.before;
-
-          function execHook(err) {
+          execHooks(ctx, hooks.before, (err) => {
             if (err) return next(err);
-            const curr = activeHooks.shift();
-            if (curr) {
-              curr.call(ctx, execHook);
-            } else {
-              
-            }
-          }
+            invokeAction.call(ctrl, ctx, (err, data) => {
+              if (err) return next(err);
 
-          const cb = (...args) => {
-            next(...args);
-          };
-          invokeAction.call(ctrl, ctx, cb);
+              // organize result data and response
+
+              execHooks(ctx, hooks.after, (err) => {
+                if (err) debug(`execute after hook of ${Controller.name}.${name} error.`);
+              });
+            });
+          });
         });
         debug(`mount api route: ${method} ${path}`);
       });
