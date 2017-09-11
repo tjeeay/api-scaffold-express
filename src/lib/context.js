@@ -1,8 +1,9 @@
 
 export default class Context {
+  args;
   req;
   res;
-  status = 'INIT';
+  state = 'INIT';
 
   constructor(req, res) {
     this.req = req;

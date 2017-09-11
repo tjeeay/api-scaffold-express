@@ -1,5 +1,6 @@
 import methods from 'methods';
-import { API_ROUTES, ROUTE_PREFIX } from '../constants';
+import { PREFIX, ACTIONS } from '../constants';
+import Action from '../action';
 
 /**
  * route decorator
@@ -17,20 +18,20 @@ function route(prefixOrMethod, path = '/') {
   }
 
   return function(target, name, descriptor) {
-    if (arguments.length === 1) {
-      target[ROUTE_PREFIX] = prefix;
-    } else if (arguments.length === 3) {
+    if (arguments.length === 1) { // class decorator
+      target[PREFIX] = prefix;
+    } else if (arguments.length === 3) {  // prop or method decorator
       if (args.length === 1) {
         path = prefixOrMethod;
       }
-      const Api = target.constructor;
-      Api[API_ROUTES] = Api[API_ROUTES] || [];
-      const route = {
-        method,
-        path,
-        action: descriptor.value,
-      };
-      Api[API_ROUTES].push(route);
+      const Controller = target.constructor;
+      Controller[ACTIONS] = Controller[ACTIONS] || [];
+
+      let action = Controller[ACTIONS].find(it => it.name === name);
+      if (!action) {
+        action = new Action(name, method, path, descriptor.value);
+      }
+      Controller[ACTIONS].push(action);
     }
   };
 }

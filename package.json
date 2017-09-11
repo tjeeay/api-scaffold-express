@@ -8,7 +8,8 @@
     "test": "mocha test",
     "lint": "eslint src",
     "clean": "rimraf bin",
-    "build": "npm run lint && npm run clean && babel src --watch --out-dir bin --source-maps inline"
+    "build-dev": "npm run lint && npm run clean && babel src --watch --out-dir bin --source-maps inline",
+    "build": "npm run lint && npm run clean && babel src --out-dir bin --source-maps"
   },
   "author": "",
   "license": "ISC",

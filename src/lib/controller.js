@@ -1,40 +1,32 @@
 import assert from 'assert';
 import EventEmmiter from 'events';
 
-export default class Api extends EventEmmiter {
-  // the http context
-  ctx;
-  logger;
-  // all api methods
+export default class Controller extends EventEmmiter {
   actions = [];
-  // exec before invoke method
-  beforeHooks = {};
-  // exec after method invoked
-  afterHooks = {};
+  hooks = {
+    before: [],
+    after: []
+  };
 
-  constructor(ctx, logger) {
-    if (new.target === Api) {
+  constructor(...args) {
+    if (new.target === Controller) {
       throw new Error('This is an abstract class.');
     }
-    super();
-    this.ctx = ctx;
-    this.logger = logger;
+    super(...args);
   }
 
-  _addHook(type, actionName, handler) {
-    assert(typeof actionName === 'string', 'action name must be a valid string.');
+  _addHook(type, handler) {
     assert(typeof handler === 'function', 'handler must be a function.');
     assert(['before', 'after'].indexOf(type) > -1, 'handler type only allowe be before or after.');
 
-    const handlers = this.beforeHooks[actionName] || [];
-    handlers.push(handler);
+    this.hooks[type].push(handler);
   }
 
-  addBeforeHook(actionName, handler) {
-    this._addHook('before', actionName, handler);
+  addBeforeHook(handler) {
+    this._addHook('before', handler);
   }
 
-  addAfterHook(actionName, handler) {
-    this._addHook('after', actionName, handler);
+  addAfterHook(handler) {
+    this._addHook('after', handler);
   }
 }
