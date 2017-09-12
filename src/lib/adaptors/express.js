@@ -1,6 +1,6 @@
 import assert from 'assert';
 import makeDebug from 'debug';
-import { trimStart, endsWith } from 'lodash';
+import { trim, trimStart } from 'lodash';
 import { PREFIX, ACTIONS } from '../constants';
 import { execHooks } from './helpers';
 
@@ -18,29 +18,24 @@ export default class ExpressAdaptor {
    */
   applyRoutes(version, files) {
     const app = this.app;
-    const slash = '/';
 
     files.forEach((file) => {
       const { default: Controller } = require(file);
       let prefix = Controller[PREFIX] || '/';
+      const ctrlHooks = Controller[ACTIONS] || [];
       const actions = Controller[ACTIONS] || [];
-      const ctrl = new Controller();
 
       actions.forEach((action) => {
-        var { name, method, path, hooks, invoke: invokeAction } = action;
+        var { name, method, path, hooks: actHooks, invoke: invokeAction } = action;
 
         method = method.toLowerCase();
         assert(method in app, `Unkonwn http method '${method}'.`);
 
-        prefix = trimStart(prefix, '/');
+        prefix = trim(prefix, '/');
         prefix = `${version}/${prefix}`;
 
-        if (!endsWith(prefix, slash)) {
-          prefix += slash;
-        }
-
         path = trimStart(path, '/');
-        path = prefix + path;
+        path = `${prefix}/${path}`;
 
         app[method](path, (req, res, next) => {
           const ctx = {
@@ -48,15 +43,27 @@ export default class ExpressAdaptor {
             res,
           };
 
-          execHooks(ctx, hooks.before, (err) => {
+          // each request has its own ctrl instance
+          const ctrl = new Controller(ctx);
+
+          // the controll hooks
+          execHooks(ctx, ctrlHooks.before, (err) => {
             if (err) return next(err);
-            invokeAction.call(ctrl, ctx, (err, data) => {
+            // the action hooks
+            execHooks(ctx, actHooks.before, (err) => {
               if (err) return next(err);
+              invokeAction.call(ctrl, ctx, (err, data) => {
+                if (err) return next(err);
 
-              // organize result data and response
+                // organize result data and response
 
-              execHooks(ctx, hooks.after, (err) => {
-                if (err) debug(`execute after hook of ${Controller.name}.${name} error.`);
+                execHooks(ctx, actHooks.after, (err) => {
+                  if (err) debug(`execute after hook of ${Controller.name}.${name} error.`);
+
+                  execHooks(ctx, ctrlHooks.after, (err) => {
+                    if (err) debug(`execute after hook of ${Controller.name}.${name} error.`);
+                  });
+                });
               });
             });
           });

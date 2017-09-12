@@ -1,6 +1,5 @@
 
 export default class Context {
-  args;
   req;
   res;
   state = 'INIT';

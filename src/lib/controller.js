@@ -2,17 +2,19 @@ import assert from 'assert';
 import EventEmmiter from 'events';
 
 export default class Controller extends EventEmmiter {
+  httpContext;
   actions = [];
   hooks = {
     before: [],
     after: []
   };
 
-  constructor(...args) {
+  constructor(ctx) {
     if (new.target === Controller) {
-      throw new Error('This is an abstract class.');
+      throw new Error('Controller is an abstract class.');
     }
-    super(...args);
+    super();
+    this.httpContext = ctx;
   }
 
   _addHook(type, handler) {
